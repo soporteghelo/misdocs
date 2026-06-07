@@ -164,6 +164,8 @@ var DASH = {
             <div style="min-width:0">
               <div style="font-weight:700;font-size:.88rem">${r.tipo}${links.length>1?` <span class="badge-n">${links.length}</span>`:''}</div>
               <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">${r.fechaHerramienta}${r.area?' · '+r.area:''}</div>
+              ${r.nombre?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Eval.: ${r.nombre}</div>`:''}
+
             </div>
             <span class="badge-status badge-completado" style="white-space:normal;max-width:45%;text-align:right;font-size:.5rem;font-weight:700;letter-spacing:0;line-height:1.3;word-break:break-word;flex-shrink:0">${(!r.evaluado || r.evaluado === 'COMPLETADO') ? 'S/N' : r.evaluado}</span>
           </div>` +

@@ -75,7 +75,7 @@ var DASH = {
   skeleton: function () {
     document.getElementById('dash-stats').innerHTML =
       '<div class="skel" style="height:72px;border-radius:14px"></div>'.repeat(4);
-    document.getElementById('dash-tipos').innerHTML   = '<div class="skel" style="height:60px;border-radius:14px;margin-bottom:8px"></div>'.repeat(2);
+    document.getElementById('dash-tipos').innerHTML   = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + '<div class="skel" style="height:68px;border-radius:14px"></div>'.repeat(4) + '</div>';
     document.getElementById('dash-recientes').innerHTML = '<div class="skel" style="height:70px;border-radius:14px;margin-bottom:8px"></div>'.repeat(3);
   },
 
@@ -123,22 +123,23 @@ var DASH = {
     if (!keys.length) {
       tiposEl.innerHTML = '<div class="empty-state"><span class="material-icons">inventory_2</span><p>Sin metas programadas. Completa la pestaña PROGRAMADOS.</p></div>';
     } else {
+      tiposEl.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px';
       keys.forEach(function (tipo, i) {
         var t   = tipos[tipo];
         var tpc = t.programados > 0 ? Math.round((t.ejecutados / t.programados) * 100) : 0;
         var cl  = tpc >= 80 ? 'var(--success)' : tpc >= 50 ? 'var(--primary)' : 'var(--warning)';
         var div = document.createElement('div');
-        div.className = 'card'; div.style.marginBottom = '8px'; div.style.animationDelay = (i*.05)+'s';
+        div.className = 'card'; div.style.animationDelay = (i*.05)+'s'; div.style.marginBottom = '0';
         div.innerHTML =
-          `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:10px;height:10px;border-radius:3px;background:${cl}"></div>
-              <span style="font-weight:700;font-size:.88rem">${tipo}</span>
+          `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:4px">
+            <div style="display:flex;align-items:center;gap:5px;min-width:0">
+              <div style="width:8px;height:8px;border-radius:2px;flex-shrink:0;background:${cl}"></div>
+              <span style="font-weight:700;font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${tipo}</span>
             </div>
-            <span style="font-size:.78rem;color:var(--text-muted)">${t.ejecutados} / ${t.programados}</span>
+            <span style="font-size:.7rem;color:var(--text-muted);flex-shrink:0">${t.ejecutados}/${t.programados}</span>
           </div>
-          <div class="progress-bar"><div class="progress-fill tipo-bar" style="width:0%;background:${cl}" data-t="${tpc}"></div></div>
-          <div style="text-align:right;font-size:.72rem;color:var(--text-muted);margin-top:4px">${tpc}%</div>`;
+          <div class="progress-bar" style="height:6px"><div class="progress-fill tipo-bar" style="width:0%;background:${cl}" data-t="${tpc}"></div></div>
+          <div style="text-align:right;font-size:.68rem;font-weight:700;color:${cl};margin-top:3px">${tpc}%</div>`;
         tiposEl.appendChild(div);
       });
       setTimeout(function () {

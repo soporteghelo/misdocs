@@ -3,11 +3,18 @@
 // ═══════════════════════════════════════════════════════════════
 
 var PROG = {
+  _meses: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Setiembre','Octubre','Noviembre','Diciembre'],
+
   load: function () {
     if (!APP.user) return;
     var el = document.getElementById('prog-content');
     el.innerHTML = '<div class="skel" style="height:80px;border-radius:14px;margin-bottom:8px"></div>'.repeat(3);
-    API.resumen(APP.user.dni)
+    var now  = new Date();
+    var anio = String(now.getFullYear());
+    var mes  = String(now.getMonth() + 1).padStart(2, '0');
+    PROG._anio = anio;
+    PROG._mes  = mes;
+    API.resumen(APP.user.dni, anio, mes)
       .then(PROG.render)
       .catch(function () {
         document.getElementById('prog-content').innerHTML =
@@ -22,9 +29,11 @@ var PROG = {
     var ini   = APP.user.nombre.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('');
     var pct   = data.porcentaje || 0;
     var clr   = pct >= 80 ? 'var(--success)' : pct >= 50 ? 'var(--primary)' : 'var(--warning)';
+    var mesNombre = PROG._meses[(parseInt(PROG._mes, 10) - 1)] || '';
+    var periodoLabel = mesNombre + ' ' + PROG._anio;
 
     var html =
-      '<div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:var(--r);padding:12px 14px;color:#fff;display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
+      '<div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:var(--r);padding:12px 14px;color:#fff;display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
         '<div class="user-avatar" style="width:38px;height:38px;font-size:.95rem;background:rgba(255,255,255,.2);flex-shrink:0">' + ini + '</div>' +
         '<div style="flex:1;min-width:0">' +
           '<div style="font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + APP.user.nombre + '</div>' +
@@ -34,6 +43,10 @@ var PROG = {
           '<div style="font-size:1.5rem;font-weight:800;color:' + (pct >= 80 ? '#a5d6a7' : pct >= 50 ? '#90caf9' : '#ffcc02') + '">' + pct + '%</div>' +
           '<div style="font-size:.68rem;opacity:.75">avance</div>' +
         '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding:0 2px">' +
+        '<span class="material-icons" style="font-size:1rem;color:var(--primary)">calendar_month</span>' +
+        '<span style="font-size:.82rem;font-weight:700;color:var(--primary)">Programación de ' + periodoLabel + '</span>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">' +
         '<div class="stat-card blue" style="padding:10px 6px">' +

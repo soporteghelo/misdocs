@@ -1,0 +1,5 @@
+# Logs del servidor local
+server.log
+
+# Configuración local de Claude
+.claude/

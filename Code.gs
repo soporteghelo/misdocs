@@ -151,7 +151,7 @@ function setupSpreadsheet_(ss, personalId) {
   }
   var prog=getOrCreateSheet_(ss,'PROGRAMADOS');
   if(prog.getLastRow()===0) {
-    prog.appendRow(['DNI','NOMBRE','TIPO_HERRAMIENTA','AÑO','MES','PROGRAMADOS','EJECUTADOS','PENDIENTES','% AVANCE']);
+    prog.appendRow(['DNI','CODIGO','NOMBRE','TIPO_HERRAMIENTA','AÑO','MES','PROGRAMADOS','EJECUTADOS','PENDIENTES','% AVANCE']);
     formatHeader_(prog,'#006064'); prog.setFrozenRows(1); prog.setTabColor('#006064');
   }
   var master=getOrCreateSheet_(ss,'USUARIOS_MASTER');
@@ -374,10 +374,10 @@ function getProgramados(dni, anio, mes) {
     var mesN  = mes  ? normMes_(mes)      : null;
     return data.slice(1).filter(function(r){
       if(!master && normDNI_(r[0])!==normDNI_(dni)) return false;
-      if(anioN && parseInt(r[3],10)!==anioN) return false;
-      if(mesN  && normMes_(r[4])   !==mesN)  return false;
+      if(anioN && parseInt(r[4],10)!==anioN) return false;
+      if(mesN  && normMes_(r[5])   !==mesN)  return false;
       return true;
-    }).map(function(r){return{dni:r[0],nombre:r[1],tipo:r[2],anio:r[3],mes:r[4],programados:r[5]||0,ejecutados:r[6]||0,pendientes:r[7]||0,avance:r[8]||0};});
+    }).map(function(r){return{dni:r[0],codigo:r[1],nombre:r[2],tipo:r[3],anio:r[4],mes:r[5],programados:r[6]||0,ejecutados:r[7]||0,pendientes:r[8]||0,avance:r[9]||0};});
   } catch(e){return [];}
 }
 
@@ -421,13 +421,13 @@ function actualizarEjecutados_(ss,dni,tipo,anio,mes) {
   var pD=pS.getDataRange().getValues();
   for(var j=1;j<pD.length;j++) {
     if(normDNI_(pD[j][0])===normDNI_(dni) &&
-       pD[j][2]===tipo &&
-       parseInt(pD[j][3],10)===anioN &&
-       normMes_(pD[j][4])===mesN) {
-      var p=pD[j][5]||0;
-      pS.getRange(j+1,7).setValue(count);
-      pS.getRange(j+1,8).setValue(Math.max(0,p-count));
-      pS.getRange(j+1,9).setValue(p>0?Math.min(1,Math.round(count/p*100)/100):0);
+       pD[j][3]===tipo &&
+       parseInt(pD[j][4],10)===anioN &&
+       normMes_(pD[j][5])===mesN) {
+      var p=pD[j][6]||0;
+      pS.getRange(j+1,8).setValue(count);
+      pS.getRange(j+1,9).setValue(Math.max(0,p-count));
+      pS.getRange(j+1,10).setValue(p>0?Math.min(1,Math.round(count/p*100)/100):0);
       break;
     }
   }
@@ -641,22 +641,22 @@ function recalcularTodo(anio, mes) {
     var updated = 0;
     for (var j = 1; j < pD.length; j++) {
       var row   = pD[j];
-      var pAnio = parseInt(row[3], 10);
-      var pMes  = normMes_(row[4]);
+      var pAnio = parseInt(row[4], 10);
+      var pMes  = normMes_(row[5]);
       if (anioN && pAnio !== anioN) continue;
       var count = 0;
       for (var i = 1; i < rD.length; i++) {
         var fH = toDate_(rD[i][5]); // FECHA_HERRAMIENTA
         if (!fH) continue;
         if (normDNI_(rD[i][1]) === normDNI_(row[0]) &&
-            rD[i][7]             === row[2]          &&
+            rD[i][7]             === row[3]          &&
             fH.getFullYear()     === pAnio           &&
             fH.getMonth() + 1    === pMes) count++;
       }
-      var prog = row[5] || 0;
-      pS.getRange(j+1, 7).setValue(count);
-      pS.getRange(j+1, 8).setValue(Math.max(0, prog - count));
-      pS.getRange(j+1, 9).setValue(prog > 0 ? Math.min(1, Math.round(count/prog*100)/100) : 0);
+      var prog = row[6] || 0;
+      pS.getRange(j+1, 8).setValue(count);
+      pS.getRange(j+1, 9).setValue(Math.max(0, prog - count));
+      pS.getRange(j+1, 10).setValue(prog > 0 ? Math.min(1, Math.round(count/prog*100)/100) : 0);
       updated++;
     }
     return { ok:true, updated:updated };

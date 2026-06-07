@@ -3,8 +3,9 @@
 // ═══════════════════════════════════════════════════════════════
 
 var REC = {
-  _all:      [],
-  _filtered: [],
+  _all:            [],
+  _filtered:       [],
+  _cargosSelected: [],
 
   load: function () {
     if (!APP.user) return;
@@ -19,6 +20,8 @@ var REC = {
       });
     }
 
+    REC._cargosSelected = [];
+    REC._updateCargoLabel();
     REC.skeleton();
     document.getElementById('rec-count').textContent = 'Cargando…';
 
@@ -45,38 +48,26 @@ var REC = {
 
   applyFilters: function () {
     var tipo      = (document.getElementById('rec-tipo')         || {}).value || '';
-    var persona   = ((document.getElementById('rec-f-persona')   || {}).value || '').trim().toLowerCase();
     var evaluador = ((document.getElementById('rec-f-evaluador') || {}).value || '').trim().toLowerCase();
     var evaluado  = ((document.getElementById('rec-f-evaluado')  || {}).value || '').trim().toLowerCase();
     var desde     = (document.getElementById('rec-f-desde')      || {}).value || '';
     var hasta     = (document.getElementById('rec-f-hasta')      || {}).value || '';
+    var cargos    = REC._cargosSelected;
 
     var dDesde = desde ? new Date(desde) : null;
     var dHasta = hasta ? new Date(hasta + 'T23:59:59') : null;
 
     REC._filtered = REC._all.filter(function (r) {
       if (tipo && r.tipo !== tipo) return false;
-
-      if (persona) {
-        var match = String(r.dni||'').toLowerCase().includes(persona) ||
-                    (r.nombre||'').toLowerCase().includes(persona);
-        if (!match) return false;
-      }
-
       if (evaluador && !(r.nombre||'').toLowerCase().includes(evaluador)) return false;
-
-      if (evaluado) {
-        var ev = (r.evaluado||'').toLowerCase();
-        if (!ev.includes(evaluado)) return false;
-      }
-
+      if (evaluado && !(r.evaluado||'').toLowerCase().includes(evaluado)) return false;
+      if (cargos.length && cargos.indexOf(r.evaluadoCargo || '') === -1) return false;
       if (dDesde || dHasta) {
         var fH = REC._parseDMY(r.fechaHerramienta);
         if (!fH) return false;
         if (dDesde && fH < dDesde) return false;
         if (dHasta && fH > dHasta) return false;
       }
-
       return true;
     });
 
@@ -84,10 +75,115 @@ var REC = {
   },
 
   clearFilters: function () {
-    ['rec-tipo','rec-f-persona','rec-f-evaluador','rec-f-evaluado','rec-f-desde','rec-f-hasta'].forEach(function (id) {
+    ['rec-tipo','rec-f-evaluador','rec-f-evaluado','rec-f-desde','rec-f-hasta'].forEach(function (id) {
       var el = document.getElementById(id); if (el) el.value = '';
     });
+    REC._cargosSelected = [];
+    REC._updateCargoLabel();
     REC.applyFilters();
+  },
+
+  openCargosPanel: function () {
+    var cargos = [];
+    REC._all.forEach(function (r) {
+      var c = r.evaluadoCargo || '';
+      if (cargos.indexOf(c) === -1) cargos.push(c);
+    });
+    cargos.sort();
+
+    if (!cargos.length) { toast('Sin datos de cargo en los registros', 'warning'); return; }
+
+    var ov = document.createElement('div');
+    ov.id = 'rec-cargo-panel';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:flex-end;justify-content:center';
+
+    var selCount = REC._cargosSelected.length;
+    var itemsHtml = cargos.map(function (c) {
+      var checked = REC._cargosSelected.indexOf(c) !== -1;
+      var label   = c || 'Sin cargo';
+      return '<label style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;' +
+        'background:' + (checked ? '#f0f7ff' : '#fff') + '">' +
+        '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="REC._toggleCargo(\'' + c.replace(/'/g,"\\'") + '\',this.checked)"' +
+          ' style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0">' +
+        '<span style="font-size:.85rem;font-weight:' + (checked ? '700' : '500') + '">' + label + '</span>' +
+        '</label>';
+    }).join('');
+
+    ov.innerHTML =
+      '<div style="background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:75vh;display:flex;flex-direction:column">' +
+        '<div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0">' +
+          '<div>' +
+            '<div style="font-weight:700;font-size:.95rem">Cargo del evaluado</div>' +
+            '<div style="font-size:.72rem;color:var(--text-muted)">Selecciona uno o más cargos</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;align-items:center">' +
+            '<button onclick="REC._clearCargos()" style="background:none;border:none;cursor:pointer;font-size:.72rem;color:var(--primary);font-weight:700">Limpiar</button>' +
+            '<button onclick="REC._closeCargosPanel()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);display:flex;align-items:center">' +
+              '<span class="material-icons">close</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div style="overflow-y:auto;flex:1">' + itemsHtml + '</div>' +
+        '<div style="padding:12px 16px;flex-shrink:0">' +
+          '<button onclick="REC._closeCargosPanel()" class="btn btn-primary">Aplicar filtro</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function (e) { if (e.target === ov) REC._closeCargosPanel(); });
+  },
+
+  _toggleCargo: function (cargo, checked) {
+    var idx = REC._cargosSelected.indexOf(cargo);
+    if (checked && idx === -1) REC._cargosSelected.push(cargo);
+    else if (!checked && idx !== -1) REC._cargosSelected.splice(idx, 1);
+    // actualizar color de fila del panel
+    var labels = document.querySelectorAll('#rec-cargo-panel label');
+    labels.forEach(function (lbl) {
+      var cb = lbl.querySelector('input[type=checkbox]');
+      if (cb) {
+        lbl.style.background = cb.checked ? '#f0f7ff' : '#fff';
+        var span = lbl.querySelector('span');
+        if (span) span.style.fontWeight = cb.checked ? '700' : '500';
+      }
+    });
+    REC._updateCargoLabel();
+    REC.applyFilters();
+  },
+
+  _clearCargos: function () {
+    REC._cargosSelected = [];
+    var labels = document.querySelectorAll('#rec-cargo-panel label');
+    labels.forEach(function (lbl) {
+      var cb = lbl.querySelector('input[type=checkbox]');
+      if (cb) { cb.checked = false; lbl.style.background = '#fff'; }
+      var span = lbl.querySelector('span');
+      if (span) span.style.fontWeight = '500';
+    });
+    REC._updateCargoLabel();
+    REC.applyFilters();
+  },
+
+  _closeCargosPanel: function () {
+    var ov = document.getElementById('rec-cargo-panel');
+    if (ov) document.body.removeChild(ov);
+  },
+
+  _updateCargoLabel: function () {
+    var el = document.getElementById('rec-f-cargo-label');
+    if (!el) return;
+    var n = REC._cargosSelected.length;
+    if (n === 0) {
+      el.textContent = 'Cargo evdo.';
+      el.style.color = 'var(--text-muted)';
+      var btn = document.getElementById('rec-f-cargo-btn');
+      if (btn) btn.style.borderColor = 'var(--border)';
+    } else {
+      el.textContent = n === 1 ? REC._cargosSelected[0] || 'Sin cargo' : n + ' cargos';
+      el.style.color = 'var(--primary)';
+      var btn2 = document.getElementById('rec-f-cargo-btn');
+      if (btn2) btn2.style.borderColor = 'var(--primary)';
+    }
   },
 
   _parseDMY: function (s) {

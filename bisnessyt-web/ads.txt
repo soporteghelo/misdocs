@@ -1,0 +1,3 @@
+# ads.txt — pega aquí las líneas que te entregue tu red publicitaria.
+# Adsterra: panel del publisher -> Websites -> tu dominio -> "ads.txt" -> copiar y pegar aquí.
+# Monetag: panel -> Sites -> tu dominio -> ads.txt -> copiar y pegar aquí.

@@ -1,0 +1,10 @@
+{
+  "name": "TubeFlow",
+  "short_name": "TubeFlow",
+  "description": "Descarga videos y música gratis / Free video & music downloader",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#ff3d57",
+  "icons": []
+}

@@ -20,15 +20,34 @@ Esta guía te lleva de cero a cobrar publicidad. Síguela en orden.
 
 ---
 
-## Paso 1 — Configurar tu app
+## Paso 1 — Configurar (y cambiar) el link de tu app
 
-Edita `js/config.js` (es el ÚNICO archivo que tocarás):
+El sitio funciona con **cualquier link** y puedes cambiarlo cuando quieras.
+Tienes 3 formas, de la más simple a la más avanzada:
 
-```js
-APP_URL: "https://el-link-de-tu-app...",
+**A) `app-config.json` (la normal):** edita ese archivo y pega tu link:
+
+```json
+{ "APP_URL": "https://el-link-de-tu-app..." }
 ```
 
-Si tu app no se deja incrustar (pantalla en blanco en el iframe), no pasa nada:
+Puedes editarlo directo desde la web de GitHub (icono del lápiz ✏️ sobre el
+archivo → Commit). Vercel redespliega solo en ~1 minuto. No hace falta tocar
+nada más para cambiar de app en el futuro.
+
+**B) Config remota (cambio instantáneo, sin redesplegar):** si quieres cambiar
+el link sin pasar por GitHub, publica en cualquier parte un JSON con el mismo
+formato `{ "APP_URL": "https://..." }` y pega su URL en `REMOTE_CONFIG_URL`
+dentro de `js/config.js` (una sola vez). Por ejemplo, un Google Apps Script
+publicado como web app que devuelva ese JSON: cambias el link en tu script/Sheet
+y el sitio lo toma al instante.
+
+**C) Para probar cualquier link al vuelo:** abre el sitio con
+`?app=https://otro-link` al final de la dirección (ej.
+`https://tu-dominio.com/?app=https://mi-otra-app.com`). No cambia nada para
+los demás visitantes; es solo para ti.
+
+Si una app no se deja incrustar (pantalla en blanco en el iframe), no pasa nada:
 el botón **"Abrir la app en pestaña nueva"** siempre funciona y también monetiza.
 
 ## Paso 2 — Desplegar en Vercel

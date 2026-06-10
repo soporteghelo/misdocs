@@ -1,16 +1,29 @@
 /* ============================================================
-   CONFIGURACIÓN DEL SITIO — ESTE ES EL ÚNICO ARCHIVO QUE DEBES EDITAR
+   CONFIGURACIÓN DEL SITIO
    ============================================================
-   1) APP_URL  -> pega el link de tu app de descargas.
-   2) SITE_URL -> tu dominio final (cuando lo tengas en Vercel).
-   3) ADS      -> pega los IDs/links que te da Adsterra o Monetag
-                  al crear cada zona (ver GUIA_MONETIZACION.md)
-                  y cambia enabled a true.
+   EL LINK DE LA APP se cambia en el archivo `app-config.json`
+   (en la raíz del sitio), NO aquí. Así puedes cambiarlo cuando
+   quieras editando un solo archivo desde GitHub.
+
+   El sitio busca el link en este orden:
+     1) ?app=https://...        (parámetro en la URL, para pruebas)
+     2) REMOTE_CONFIG_URL       (JSON externo: cambio instantáneo
+                                 sin redesplegar — opcional)
+     3) app-config.json         (archivo del sitio — lo normal)
+     4) APP_URL de este archivo (respaldo)
+
+   Lo demás: SITE_URL -> tu dominio; ADS -> IDs de Adsterra/Monetag
+   (ver GUIA_MONETIZACION.md) y cambia enabled a true.
    ============================================================ */
 
 window.SITE_CONFIG = {
-  // Link de tu app de descarga de videos/música (la que ya tienes)
+  // Respaldo del link de la app (lo normal es usar app-config.json)
   APP_URL: "PEGA_AQUI_EL_LINK_DE_TU_APP",
+
+  // OPCIONAL: URL de un JSON externo con { "APP_URL": "https://..." }.
+  // Sirve para cambiar el link al instante sin redesplegar
+  // (ej. un Google Apps Script publicado como web app, o un raw de GitHub).
+  REMOTE_CONFIG_URL: "",
 
   // Nombre y dominio del sitio (puedes cambiarlos)
   SITE_NAME: "TubeFlow",

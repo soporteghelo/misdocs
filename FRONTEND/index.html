@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Entrega de Documentos — SSMA</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=12">
+</head>
+<body>
+
+<!-- ══ SPLASH ══════════════════════════════════════════════════════ -->
+<div id="splash" class="splash">
+  <div class="splash-content">
+    <div class="splash-icon">📋</div>
+    <h1 class="splash-title">Entrega Docs</h1>
+    <p class="splash-sub">SSMA</p>
+    <div class="splash-ring"></div>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ═══════════════════════════════════════════════════ -->
+<div id="app" class="app hidden">
+
+  <!-- Header -->
+  <header class="app-header" id="app-header">
+    <button class="icon-btn" id="btn-menu" onclick="APP.toggleMenu()">
+      <span class="material-icons">menu</span>
+    </button>
+    <span class="header-title" id="header-title">Entrega de Documentos</span>
+    <button class="icon-btn" id="btn-logout" onclick="APP.logout()" title="Cerrar sesión">
+      <span class="material-icons">logout</span>
+    </button>
+  </header>
+
+  <!-- Drawer / Sidebar -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="APP.closeMenu()"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar" id="drawer-avatar">U</div>
+      <div class="drawer-user-info">
+        <div class="drawer-name" id="drawer-name">Usuario</div>
+        <div class="drawer-cargo" id="drawer-cargo">—</div>
+        <div class="drawer-badge" id="drawer-badge">OPERARIO</div>
+      </div>
+    </div>
+    <div class="drawer-menu" id="drawer-menu">
+      <!-- Se inyecta por rol -->
+    </div>
+  </nav>
+
+  <!-- Views container -->
+  <main class="main-content" id="main-content">
+
+    <!-- ── VIEW: CONFIG ──────────────────────────────────────── -->
+    <section id="view-config" class="view hidden">
+      <div class="page-header">
+        <h2>Configuración inicial</h2>
+        <p>Conecta la app con tu Google Spreadsheet</p>
+      </div>
+      <div class="card">
+        <label class="field-label">URL de Google Sheets</label>
+        <input type="url" id="cfg-sheets-url" class="input" placeholder="https://docs.google.com/spreadsheets/d/...">
+        <p class="field-hint">Abre tu Spreadsheet → copia la URL de la barra del navegador</p>
+        <button class="btn btn-primary btn-full mt-16" onclick="CFG.guardar()">
+          <span class="material-icons">save</span> Guardar configuración
+        </button>
+      </div>
+    </section>
+
+    <!-- ── VIEW: LOGIN ───────────────────────────────────────── -->
+    <section id="view-login" class="view hidden">
+      <div class="login-container">
+        <div class="login-logo">📋</div>
+        <h1 class="login-title">Entrega de Documentos</h1>
+        <p class="login-sub">SSMA — Sistema de constancias</p>
+        <div class="card login-card">
+          <label class="field-label">Tu DNI</label>
+          <div class="input-icon-wrap">
+            <span class="material-icons input-icon">badge</span>
+            <input type="tel" id="login-dni" class="input input-with-icon"
+              placeholder="Ingresa tus 8 dígitos"
+              maxlength="8"
+              autocomplete="off"
+              oninput="LOGIN.onDniInput(this.value)">
+          </div>
+          <div id="login-pwd-wrap" class="hidden mt-12">
+            <label class="field-label">Contraseña (Admin)</label>
+            <div class="input-icon-wrap">
+              <span class="material-icons input-icon">lock</span>
+              <input type="password" id="login-pwd" class="input input-with-icon"
+                placeholder="Contraseña"
+                onkeydown="if(event.key==='Enter') LOGIN.submit()">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full mt-16" id="login-btn" onclick="LOGIN.submit()" disabled>
+            <span class="material-icons">arrow_forward</span> Ingresar
+          </button>
+          <div id="login-error" class="alert alert-error hidden"></div>
+
+          <!-- Formulario de auto-registro (aparece si DNI no existe) -->
+          <div id="login-registro" class="hidden">
+            <div class="registro-divider">
+              <span>Primer ingreso — completa tus datos</span>
+            </div>
+            <label class="field-label mt-12">Apellidos <span class="req">*</span></label>
+            <input type="text" id="reg-apellidos" class="input" placeholder="Tus apellidos"
+              oninput="LOGIN.onRegInput()">
+
+            <label class="field-label mt-12">Nombres <span class="req">*</span></label>
+            <input type="text" id="reg-nombres" class="input" placeholder="Tus nombres"
+              oninput="LOGIN.onRegInput()">
+
+            <label class="field-label mt-12">Empresa <span class="req">*</span></label>
+            <input type="text" id="reg-empresa" class="input" placeholder="Empresa" value="AESA"
+              oninput="LOGIN.onRegInput()">
+
+            <label class="field-label mt-12">Cargo <span class="req">*</span></label>
+            <div class="combobox-wrap">
+              <input type="text" id="reg-cargo" class="input" placeholder="Selecciona o escribe tu cargo"
+                list="cargos-list" autocomplete="off" oninput="LOGIN.onRegInput()">
+              <datalist id="cargos-list"></datalist>
+            </div>
+            <p class="field-hint">Elige de la lista o escribe uno nuevo</p>
+
+            <button class="btn btn-success btn-full mt-16" id="reg-btn" onclick="LOGIN.registrar()" disabled>
+              <span class="material-icons">person_add</span> Registrarme e ingresar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: NUEVA ENTREGA ───────────────────────────────── -->
+    <section id="view-entrega" class="view hidden">
+      <!-- Barra de progreso -->
+      <div class="step-bar">
+        <div class="step-progress" id="step-progress"></div>
+      </div>
+      <div class="step-label" id="step-label">Paso 1 de 4</div>
+
+      <!-- Paso 1: ¿Qué se entrega? + Tu firma (fusionado) -->
+      <div id="entrega-step-1" class="step-content step-tight">
+        <div class="page-header compact">
+          <h2>¿Qué se entrega?</h2>
+        </div>
+        <div class="card card-compact">
+          <label class="field-label">Tipo de entrega</label>
+          <div class="toggle-group" id="tipo-entrega-toggle">
+            <button class="toggle-btn" data-val="FISICO" onclick="ENTREGA.selectTipoEntrega(this)">
+              <span class="material-icons">description</span>
+              <span>Físico</span>
+            </button>
+            <button class="toggle-btn" data-val="VIRTUAL" onclick="ENTREGA.selectTipoEntrega(this)">
+              <span class="material-icons">cloud</span>
+              <span>Virtual</span>
+            </button>
+            <button class="toggle-btn" data-val="FISICO Y VIRTUAL" onclick="ENTREGA.selectTipoEntrega(this)">
+              <span class="material-icons">sync</span>
+              <span>Ambos</span>
+            </button>
+          </div>
+
+          <label class="field-label mt-12">Tipo de documento</label>
+          <select id="tipo-documento" class="input select" onchange="ENTREGA.onTipoDocChange()">
+            <option value="">— Selecciona —</option>
+          </select>
+          <input type="text" id="tipo-documento-otro" class="input mt-8 hidden"
+            placeholder="Especifica el tipo de documento" autocomplete="off">
+
+          <label class="field-label mt-12">¿Qué se está entregando?</label>
+          <textarea id="descripcion" class="input textarea textarea-compact" rows="2"
+            placeholder="Ej: PETS de perforación .....  "></textarea>
+
+          <label class="field-label mt-12">Tu firma <span class="req">*</span></label>
+          <div class="signature-container">
+            <canvas id="canvas-receptor" class="signature-canvas compact"></canvas>
+          </div>
+          <button class="btn btn-ghost btn-sm mt-8" onclick="ENTREGA.clearSig('receptor')">
+            <span class="material-icons">refresh</span> Borrar firma
+          </button>
+        </div>
+        <div class="step-nav">
+          <span></span>
+          <button class="btn btn-primary" onclick="ENTREGA.nextStep()" id="btn-next-1">
+            Siguiente <span class="material-icons">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Foto del receptor -->
+      <div id="entrega-step-2" class="step-content hidden">
+        <div class="page-header">
+          <h2>Tu foto</h2>
+          <p>Toma una foto de tu cara</p>
+        </div>
+        <div class="card center-content">
+          <div class="photo-preview" id="foto-receptor-preview">
+            <span class="material-icons photo-placeholder-icon">face</span>
+          </div>
+          <button class="btn btn-primary mt-16" onclick="ENTREGA.abrirCamara('receptor')">
+            <span class="material-icons">camera_alt</span> Tomar foto
+          </button>
+        </div>
+        <div class="step-nav">
+          <button class="btn btn-ghost" onclick="ENTREGA.prevStep()">
+            <span class="material-icons">arrow_back</span> Atrás
+          </button>
+          <button class="btn btn-primary" onclick="ENTREGA.nextStep()">
+            Siguiente <span class="material-icons">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 3: ¿Quién entrega? + firma + foto -->
+      <div id="entrega-step-3" class="step-content hidden">
+        <div class="page-header">
+          <h2>¿Quién te entrega?</h2>
+        </div>
+        <div class="card">
+          <label class="field-label">Selecciona al entregador</label>
+          <div class="search-select-wrap">
+            <span class="material-icons input-icon">person_search</span>
+            <input type="text" id="entregador-search" class="input input-with-icon"
+              placeholder="Escribe para buscar..."
+              oninput="ENTREGA.filtrarEntregadores(this.value)"
+              onfocus="ENTREGA.showDropdown()"
+              onblur="ENTREGA.hideDropdown()"
+              autocomplete="off">
+            <div class="dropdown-list hidden" id="entregador-dropdown"></div>
+          </div>
+          <div id="entregador-selected" class="selected-chip hidden"></div>
+
+          <div id="entregador-firma-section" class="hidden mt-16">
+            <label class="field-label">Firma del entregador <span class="opt">(opcional)</span></label>
+            <div class="signature-container">
+              <canvas id="canvas-entregador" class="signature-canvas"></canvas>
+            </div>
+            <button class="btn btn-ghost mt-8" onclick="ENTREGA.clearSig('entregador')">
+              <span class="material-icons">refresh</span> Borrar
+            </button>
+          </div>
+
+          <div id="entregador-foto-section" class="hidden mt-16">
+            <label class="field-label">Foto del entregador <span class="opt">(opcional)</span></label>
+            <div class="photo-preview photo-small" id="foto-entregador-preview">
+              <span class="material-icons photo-placeholder-icon">face</span>
+            </div>
+            <button class="btn btn-primary mt-8 btn-sm" onclick="ENTREGA.abrirCamara('entregador')">
+              <span class="material-icons">camera_alt</span> Tomar foto
+            </button>
+          </div>
+        </div>
+        <div class="step-nav">
+          <button class="btn btn-ghost" onclick="ENTREGA.prevStep()">
+            <span class="material-icons">arrow_back</span> Atrás
+          </button>
+          <button class="btn btn-primary" onclick="ENTREGA.nextStep()">
+            Siguiente <span class="material-icons">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 4: Confirmar -->
+      <div id="entrega-step-4" class="step-content hidden">
+        <div class="page-header">
+          <h2>Confirmar entrega</h2>
+          <p>Revisa los datos antes de guardar</p>
+        </div>
+        <div class="card summary-card" id="resumen-entrega"></div>
+        <div class="step-nav">
+          <button class="btn btn-ghost" onclick="ENTREGA.prevStep()">
+            <span class="material-icons">arrow_back</span> Atrás
+          </button>
+          <button class="btn btn-success btn-full" id="btn-confirmar" onclick="ENTREGA.confirmar()">
+            <span class="material-icons">verified</span> Confirmar y descargar vale
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: MIS ENTREGAS ────────────────────────────────── -->
+    <section id="view-mis-entregas" class="view hidden">
+      <div class="page-header">
+        <h2>Mis entregas</h2>
+        <p>Documentos que has recibido</p>
+      </div>
+      <div id="mis-entregas-list" class="cards-list">
+        <div class="skeleton-list">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: DASHBOARD ADMIN ─────────────────────────────── -->
+    <section id="view-dashboard" class="view hidden">
+      <div class="page-header">
+        <h2>Panel de entregas</h2>
+      </div>
+      <!-- Estadísticas (interactivas) -->
+      <div class="stats-grid" id="dashboard-stats"></div>
+
+      <!-- Filtros -->
+      <div class="card filters-card">
+        <button type="button" class="filters-toggle" onclick="DASH.toggleFiltros()">
+          <span><span class="material-icons">tune</span> Filtros</span>
+          <span class="material-icons" id="filters-caret">expand_more</span>
+        </button>
+
+        <div class="filters-body hidden" id="filters-body">
+          <!-- Chips de rango rápido -->
+          <div class="chips-row" id="filter-chips">
+            <button type="button" class="chip" data-rango="hoy"  onclick="DASH.rangoFecha('hoy', this)">Hoy</button>
+            <button type="button" class="chip" data-rango="7"    onclick="DASH.rangoFecha('7', this)">7 días</button>
+            <button type="button" class="chip" data-rango="30"   onclick="DASH.rangoFecha('30', this)">30 días</button>
+            <button type="button" class="chip" data-rango="mes"  onclick="DASH.rangoFecha('mes', this)">Este mes</button>
+            <button type="button" class="chip chip-active" data-rango="" onclick="DASH.rangoFecha('', this)">Todo</button>
+          </div>
+
+          <div class="filters-row">
+            <div class="input-icon-wrap" style="flex:1;min-width:130px">
+              <span class="material-icons input-icon">person_search</span>
+              <input type="text" id="filter-nombre" class="input input-sm input-with-icon"
+                     placeholder="Nombre del receptor" oninput="DASH._renderLista()">
+            </div>
+            <select id="filter-tipo" class="input input-sm select" onchange="DASH.cargar()"></select>
+            <select id="filter-entrega" class="input input-sm select" onchange="DASH.aplicarRapido()">
+              <option value="">Físicas y virtuales</option>
+              <option value="FISICO">Solo físicas</option>
+              <option value="VIRTUAL">Solo virtuales</option>
+            </select>
+          </div>
+
+          <div class="filters-row">
+            <label class="filter-date">Desde
+              <input type="date" id="filter-desde" class="input input-sm" onchange="DASH.cargar()">
+            </label>
+            <label class="filter-date">Hasta
+              <input type="date" id="filter-hasta" class="input input-sm" onchange="DASH.cargar()">
+            </label>
+          </div>
+
+          <div class="filters-actions">
+            <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="DASH.generarListaPDF()">
+              <span class="material-icons">picture_as_pdf</span> Lista PDF
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="DASH.limpiar()">
+              <span class="material-icons">filter_alt_off</span> Limpiar
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="DASH.exportar()">
+              <span class="material-icons">download</span> CSV
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="DASH.cargar()">
+              <span class="material-icons">search</span> Buscar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-bar" id="dashboard-count"></div>
+      <div id="dashboard-list" class="cards-list"></div>
+    </section>
+
+    <!-- ── VIEW: USUARIOS ADMIN ──────────────────────────────── -->
+    <section id="view-usuarios" class="view hidden">
+      <div class="page-header flex-between">
+        <h2>Usuarios</h2>
+        <button class="btn btn-primary btn-sm" onclick="USUARIOS.abrirModal()">
+          <span class="material-icons">person_add</span> Agregar
+        </button>
+      </div>
+      <div id="usuarios-list" class="cards-list"></div>
+      <!-- Modal usuario -->
+      <div class="modal-overlay hidden" id="modal-usuario">
+        <div class="modal-sheet">
+          <div class="modal-header">
+            <h3 id="modal-usuario-title">Nuevo usuario</h3>
+            <button class="icon-btn" onclick="USUARIOS.cerrarModal()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="usr-dni-orig">
+            <label class="field-label">DNI</label>
+            <input type="tel" id="usr-dni" class="input" placeholder="8 dígitos" maxlength="8">
+            <label class="field-label mt-12">Apellidos</label>
+            <input type="text" id="usr-apellidos" class="input" placeholder="Apellidos">
+            <label class="field-label mt-12">Nombres</label>
+            <input type="text" id="usr-nombres" class="input" placeholder="Nombres">
+            <label class="field-label mt-12">Empresa</label>
+            <input type="text" id="usr-empresa" class="input" placeholder="Empresa">
+            <label class="field-label mt-12">Cargo</label>
+            <input type="text" id="usr-cargo" class="input" placeholder="Cargo">
+            <label class="field-label mt-12">Área</label>
+            <input type="text" id="usr-area" class="input" placeholder="Área">
+            <label class="field-label mt-12">Rol</label>
+            <select id="usr-rol" class="input select">
+              <option value="OPERARIO">OPERARIO</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+            <label class="field-label mt-12">Contraseña (solo Admin)</label>
+            <input type="text" id="usr-pwd" class="input" placeholder="Dejar vacío si no requiere">
+            <div class="toggle-activo mt-12">
+              <label class="field-label">Activo</label>
+              <input type="checkbox" id="usr-activo" checked>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="USUARIOS.cerrarModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="USUARIOS.guardar()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: TIPOS DOCUMENTO ─────────────────────────────── -->
+    <section id="view-tipos" class="view hidden">
+      <div class="page-header flex-between">
+        <h2>Tipos de documento</h2>
+        <button class="btn btn-primary btn-sm" onclick="TIPOS.abrirModal()">
+          <span class="material-icons">add</span> Agregar
+        </button>
+      </div>
+      <div id="tipos-list" class="cards-list"></div>
+      <!-- Modal tipo -->
+      <div class="modal-overlay hidden" id="modal-tipo">
+        <div class="modal-sheet">
+          <div class="modal-header">
+            <h3 id="modal-tipo-title">Nuevo tipo</h3>
+            <button class="icon-btn" onclick="TIPOS.cerrarModal()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="tipo-orig">
+            <label class="field-label">Tipo de documento</label>
+            <input type="text" id="tipo-nombre" class="input" placeholder="Ej: Contrato de Trabajo">
+            <label class="field-label mt-12">Descripción</label>
+            <input type="text" id="tipo-desc" class="input" placeholder="Descripción corta">
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="TIPOS.cerrarModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="TIPOS.guardar()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: ENTREGADORES ────────────────────────────────── -->
+    <section id="view-entregadores" class="view hidden">
+      <div class="page-header flex-between">
+        <h2>Entregadores</h2>
+        <button class="btn btn-primary btn-sm" onclick="ENTREGADORES.abrirModal()">
+          <span class="material-icons">person_add</span> Agregar
+        </button>
+      </div>
+      <div id="entregadores-list" class="cards-list"></div>
+      <!-- Modal entregador -->
+      <div class="modal-overlay hidden" id="modal-entregador">
+        <div class="modal-sheet">
+          <div class="modal-header">
+            <h3 id="modal-entregador-title">Nuevo entregador</h3>
+            <button class="icon-btn" onclick="ENTREGADORES.cerrarModal()">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="ent-dni-orig">
+            <label class="field-label">DNI</label>
+            <input type="tel" id="ent-dni" class="input" placeholder="8 dígitos" maxlength="8">
+            <label class="field-label mt-12">Apellidos</label>
+            <input type="text" id="ent-apellidos" class="input" placeholder="Apellidos">
+            <label class="field-label mt-12">Nombres</label>
+            <input type="text" id="ent-nombres" class="input" placeholder="Nombres">
+            <label class="field-label mt-12">Cargo</label>
+            <input type="text" id="ent-cargo" class="input" placeholder="Cargo">
+            <label class="field-label mt-12">Área</label>
+            <input type="text" id="ent-area" class="input" placeholder="Área">
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="ENTREGADORES.cerrarModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="ENTREGADORES.guardar()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: VERIFICAR ───────────────────────────────────── -->
+    <section id="view-verificar" class="view hidden">
+      <div class="login-container">
+        <div class="card">
+          <div id="verificar-content"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Nav (operario) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item" data-view="entrega" onclick="APP.navigate('entrega')">
+      <span class="material-icons">add_circle</span>
+      <span>Nueva entrega</span>
+    </button>
+    <button class="nav-item" data-view="mis-entregas" onclick="APP.navigate('mis-entregas')">
+      <span class="material-icons">folder</span>
+      <span>Mis entregas</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ══ MODAL CÁMARA ════════════════════════════════════════════════ -->
+<div id="camera-modal" class="camera-modal hidden">
+  <div class="camera-sheet">
+
+    <!-- Header -->
+    <div class="camera-header">
+      <span id="cam-title">Foto de cara</span>
+      <button class="cam-close-btn" onclick="CAM.cerrar()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Estado / instrucción -->
+    <div class="cam-status cam-status-muted" id="cam-status">Iniciando cámara...</div>
+
+    <!-- Viewfinder con video + óvalo -->
+    <div id="cam-viewfinder" class="cam-viewfinder">
+      <video id="cam-video" autoplay playsinline muted class="cam-video"></video>
+      <!-- Óvalo guía -->
+      <div class="cam-oval-wrap">
+        <div class="cam-oval cam-oval-none" id="cam-oval"></div>
+      </div>
+      <!-- Barra de progreso de estabilidad -->
+      <div class="cam-progress-track">
+        <div class="cam-progress-fill" id="cam-progress" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Preview captura -->
+    <div id="cam-preview-section" class="cam-preview-section hidden">
+      <img id="cam-captured-img" alt="foto capturada" class="cam-captured-img">
+      <div class="cam-capture-badge">
+        <span class="material-icons">check_circle</span> CAPTURA EXITOSA
+      </div>
+    </div>
+
+    <!-- Sin cámara disponible -->
+    <div id="cam-fallback" class="cam-fallback hidden">
+      <span class="material-icons">no_photography</span>
+      <p>La foto debe tomarse con la cámara del dispositivo.</p>
+      <p class="text-sm">Permite el acceso a la cámara y vuelve a intentarlo.</p>
+      <button class="btn btn-ghost" onclick="CAM.cerrar()">Cerrar</button>
+    </div>
+
+    <!-- Botones -->
+    <div class="camera-actions">
+      <button id="cam-btn-capturar" class="btn btn-primary hidden" onclick="CAM.capturarManual()">
+        <span class="material-icons">camera_alt</span> Capturar
+      </button>
+      <button id="cam-btn-retry" class="btn btn-ghost hidden" onclick="CAM.reiniciar()">
+        <span class="material-icons">refresh</span> Repetir
+      </button>
+      <button id="cam-btn-aceptar" class="btn btn-success hidden" onclick="CAM.aceptar()">
+        <span class="material-icons">check</span> Usar esta foto
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Scripts ──────────────────────────────────────────────────── -->
+<!-- Librerías locales -->
+<script src="js/libs/signature_pad.min.js"></script>
+<script src="js/libs/jspdf.umd.min.js"></script>
+<script src="js/libs/qrcode.min.js"></script>
+
+<!-- App core -->
+<script src="js/config.js?v=12"></script>
+<script src="js/api.js?v=12"></script>
+<script src="js/app.js?v=12"></script>
+
+<!-- Vistas -->
+<script src="js/views/camera-modal.js?v=12"></script>
+<script src="js/views/config-view.js?v=12"></script>
+<script src="js/views/login-view.js?v=12"></script>
+<script src="js/views/entrega-view.js?v=12"></script>
+<script src="js/views/mis-entregas-view.js?v=12"></script>
+<script src="js/views/dashboard-view.js?v=12"></script>
+<script src="js/views/usuarios-view.js?v=12"></script>
+<script src="js/views/tipos-view.js?v=12"></script>
+<script src="js/views/entregadores-view.js?v=12"></script>
+<script src="js/views/verificar-view.js?v=12"></script>
+
+</body>
+</html>

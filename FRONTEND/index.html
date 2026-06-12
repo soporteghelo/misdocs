@@ -5,17 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Entrega de Documentos — SSMA</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6a2 2 0 0 1 2 2v0h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1'/><rect x='9' y='2' width='6' height='4' rx='1' fill='%232563eb' stroke='none'/><path d='M8 12l2.5 2.5L16 9'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=12">
+  <link rel="stylesheet" href="css/main.css?v=15">
 </head>
 <body>
 
 <!-- ══ SPLASH ══════════════════════════════════════════════════════ -->
 <div id="splash" class="splash">
   <div class="splash-content">
-    <div class="splash-icon">📋</div>
+    <div class="splash-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="56" height="56">
+        <path d="M9 4h6a2 2 0 0 1 2 2h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1"/>
+        <rect x="9" y="3" width="6" height="4" rx="1.2" fill="currentColor" stroke="none"/>
+        <path d="M8 13l2.5 2.5L16 10"/>
+      </svg>
+    </div>
     <h1 class="splash-title">Entrega Docs</h1>
     <p class="splash-sub">SSMA</p>
     <div class="splash-ring"></div>
@@ -74,7 +82,13 @@
     <!-- ── VIEW: LOGIN ───────────────────────────────────────── -->
     <section id="view-login" class="view hidden">
       <div class="login-container">
-        <div class="login-logo">📋</div>
+        <div class="login-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="40" height="40">
+            <path d="M9 4h6a2 2 0 0 1 2 2h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1"/>
+            <rect x="9" y="3" width="6" height="4" rx="1.2" fill="#fff" stroke="none"/>
+            <path d="M8 13l2.5 2.5L16 10"/>
+          </svg>
+        </div>
         <h1 class="login-title">Entrega de Documentos</h1>
         <p class="login-sub">SSMA — Sistema de constancias</p>
         <div class="card login-card">
@@ -584,21 +598,21 @@
 <script src="js/libs/qrcode.min.js"></script>
 
 <!-- App core -->
-<script src="js/config.js?v=12"></script>
-<script src="js/api.js?v=12"></script>
-<script src="js/app.js?v=12"></script>
+<script src="js/config.js?v=15"></script>
+<script src="js/api.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
 
 <!-- Vistas -->
-<script src="js/views/camera-modal.js?v=12"></script>
-<script src="js/views/config-view.js?v=12"></script>
-<script src="js/views/login-view.js?v=12"></script>
-<script src="js/views/entrega-view.js?v=12"></script>
-<script src="js/views/mis-entregas-view.js?v=12"></script>
-<script src="js/views/dashboard-view.js?v=12"></script>
-<script src="js/views/usuarios-view.js?v=12"></script>
-<script src="js/views/tipos-view.js?v=12"></script>
-<script src="js/views/entregadores-view.js?v=12"></script>
-<script src="js/views/verificar-view.js?v=12"></script>
+<script src="js/views/camera-modal.js?v=15"></script>
+<script src="js/views/config-view.js?v=15"></script>
+<script src="js/views/login-view.js?v=15"></script>
+<script src="js/views/entrega-view.js?v=15"></script>
+<script src="js/views/mis-entregas-view.js?v=15"></script>
+<script src="js/views/dashboard-view.js?v=15"></script>
+<script src="js/views/usuarios-view.js?v=15"></script>
+<script src="js/views/tipos-view.js?v=15"></script>
+<script src="js/views/entregadores-view.js?v=15"></script>
+<script src="js/views/verificar-view.js?v=15"></script>
 
 </body>
 </html>

@@ -4,6 +4,21 @@ const SESSION_KEY = 'ed_session';
 let _session = null;
 let _currentView = null;
 
+// Almacenamiento seguro: localStorage puede lanzar SecurityError dentro de
+// un iframe de otro origen (Brave/Chrome bloquean storage de terceros).
+// Si falla, se usa una copia en memoria para no romper la app.
+const _store = (() => {
+  const _mem = {};
+  let _ok = true;
+  try { const k = '__t'; localStorage.setItem(k, '1'); localStorage.removeItem(k); }
+  catch { _ok = false; }
+  return {
+    get(k)    { try { return _ok ? localStorage.getItem(k) : _mem[k] ?? null; } catch { return _mem[k] ?? null; } },
+    set(k, v) { _mem[k] = v; try { if (_ok) localStorage.setItem(k, v); } catch {} },
+    remove(k) { delete _mem[k]; try { if (_ok) localStorage.removeItem(k); } catch {} }
+  };
+})();
+
 const APP = {
 
   // ── Inicio ────────────────────────────────────────────────────
@@ -17,13 +32,13 @@ const APP = {
     }
 
     // ¿Hay sesión guardada?
-    const saved = localStorage.getItem(SESSION_KEY);
+    const saved = _store.get(SESSION_KEY);
     if (saved) {
       try {
         _session = JSON.parse(saved);
         APP._afterLogin();
         return;
-      } catch { localStorage.removeItem(SESSION_KEY); }
+      } catch { _store.remove(SESSION_KEY); }
     }
 
     // ¿URL tiene ?verificar=ID?
@@ -39,7 +54,7 @@ const APP = {
   // ── Sesión ────────────────────────────────────────────────────
   setSession(data) {
     _session = data;
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    _store.set(SESSION_KEY, JSON.stringify(data));
   },
 
   getSession() { return _session; },
@@ -47,7 +62,7 @@ const APP = {
   logout() {
     if (!confirm('¿Cerrar sesión?')) return;
     _session = null;
-    localStorage.removeItem(SESSION_KEY);
+    _store.remove(SESSION_KEY);
     APP.navigate('login');
     APP.closeMenu();
   },
@@ -191,6 +206,10 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     document.getElementById('splash').style.display = 'none';
     document.getElementById('app').classList.remove('hidden');
-    APP.init();
+    // Red de seguridad: si init falla (p.ej. restricciones en iframe),
+    // al menos mostramos el login en vez de una pantalla en blanco.
+    Promise.resolve()
+      .then(() => APP.init())
+      .catch(err => { console.error('init() falló:', err); try { APP.navigate('login'); } catch {} });
   }, 1800);
 });

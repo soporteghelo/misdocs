@@ -8,6 +8,6 @@
   "theme_color": "#2563eb",
   "orientation": "portrait",
   "icons": [
-    { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><rect width='24' height='24' rx='5' fill='%232563eb' stroke='none'/><path d='M9 5h6a2 2 0 0 1 2 2h0a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h0'/><rect x='9' y='4' width='6' height='4' rx='1.2' fill='%23ffffff' stroke='none'/><path d='M8.5 13l2.5 2.5L16 10'/></svg>", "sizes": "any", "type": "image/svg+xml" }
   ]
 }
